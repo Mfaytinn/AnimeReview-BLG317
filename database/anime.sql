@@ -1,7 +1,5 @@
 CREATE DATABASE anime_db;
 USE anime_db;
-CREATE DATABASE anime_db;
-USE anime_db;
 
 
 -- Table 2: Anime Information 
