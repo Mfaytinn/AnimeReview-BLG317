@@ -17,7 +17,7 @@ CREATE TABLE Anime_Scores (
     score_id INT PRIMARY KEY AUTO_INCREMENT,
     anime_id INT,
     score FLOAT,
-    rank INT,
+    ranking INT,
     popularity INT,
     FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id)
 );
