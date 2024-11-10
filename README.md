@@ -1,1 +1,1 @@
-test
+This is a project for Istanbul Techical University, BLG317E Database Systems.
