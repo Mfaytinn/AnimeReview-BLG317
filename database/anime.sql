@@ -3,7 +3,7 @@ USE anime_db;
 
 -- Table 1: Users
 CREATE TABLE Users (
-    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT PRIMARY KEY,
     username VARCHAR(50) NOT NULL
 );
 
@@ -14,7 +14,7 @@ CREATE TABLE Anime_Information (
     english_name VARCHAR(255),
     other_name VARCHAR(255),
     synopsis TEXT,
-    type VARCHAR(50)
+    type_anime VARCHAR(50)
 );
 
 -- Table 3: Anime Scores
