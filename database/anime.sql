@@ -19,12 +19,12 @@ CREATE TABLE Anime_Information (
 
 -- Table 3: Anime Scores
 CREATE TABLE Anime_Scores (
-    score_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50),
     anime_id INT,
     score FLOAT,
-    ranking INT,
-    popularity INT,
     FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id)
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
 -- Table 4: Producers
