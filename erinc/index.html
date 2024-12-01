@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block title %}Anime List{% endblock %}
+
+{% block header %}
+    <h1>Animes</h1>
+{% endblock %}
+
+{% block content %}
+    <ul>
+        {% for anime in anime_information %}
+        <li>{{ anime['name'] }} - {{ anime['english_name'] }} - {{ anime['other_name'] }} - {{ anime['synopsis'] }} - {{ anime['type'] }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

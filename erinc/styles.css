@@ -1,0 +1,67 @@
+body{
+    font-family:Arial, sans-serif;
+    margin:20px;
+}
+h1{
+    color:#333;
+}
+form label{
+    display:inline-block;
+    width:700px;
+}
+form input{
+    margin-bottom:10px;
+}
+button{
+    padding:5px 10px;
+}
+footer{
+    text-align:center;
+}
+.flashes{
+    list-style: none;
+    padding: 0;
+}
+.flash{
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.flash.success{
+    background-color: #d4edda;
+    color: #155724;
+}
+.flash.danger{
+    background-color: #f8d7da;
+    color: #721c24;
+}
+.flash.warning{
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+
+
+
+
+nav {
+    background-color: #333;
+    padding: 10px;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    margin: 0 15px;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+header {
+    text-align: center;
+    margin-top: 20px;
+}

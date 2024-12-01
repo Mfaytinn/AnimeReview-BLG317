@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+
+{% block title %}Add Anime{% endblock %}
+
+{% block header %}
+    <h1>Add a New Anime</h1>
+{% endblock %}
+
+{% block content %}
+    <form action="{{ url_for('add_anime') }}" method="post">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="english_name">English Name:</label>
+        <input type="text" id="english_name" name="english_name"><br>
+
+        <label for="other_name">Other Name:</label>
+        <input type="text" id="other_name" name="other_name"><br>
+
+        <label for="synopsis">Synopsis:</label>
+        <textarea id="synopsis" name="synopsis" rows="4" cols="50"></textarea><br>
+
+        <label for="type">Type:</label>
+        <input type="text" id="type" name="type"><br>
+
+        <button type="submit">Add Anime</button>
+    </form>
+{% endblock %}
