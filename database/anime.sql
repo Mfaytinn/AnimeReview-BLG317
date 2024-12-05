@@ -1,5 +1,5 @@
+CREATE DATABASE anime_db;
 USE anime_db;
-
 
 -- Table 1: Users
 CREATE TABLE Users (
@@ -19,35 +19,34 @@ CREATE TABLE Anime_Information (
 
 -- Table 3: Anime Scores
 CREATE TABLE Anime_Scores (
-    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    score_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
     username VARCHAR(50),
     anime_id INT,
-    score FLOAT,
+    score INT
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
     FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id)
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
 -- Table 4: Producers
 CREATE TABLE Producers (
     producer_id INT PRIMARY KEY AUTO_INCREMENT,
-    producer_name VARCHAR(255) NOT NULL
+    producer_name TEXT
 );
 
 -- Table 5: Studios
 CREATE TABLE Studios (
     studio_id INT PRIMARY KEY AUTO_INCREMENT,
-    studio_name VARCHAR(255) NOT NULL
+    studio_name VARCHAR(255)
 );
 
 -- Table 6: Anime Production
 CREATE TABLE Anime_Production (
     production_id INT PRIMARY KEY AUTO_INCREMENT,
     anime_id INT,
-    producer_id INT,
-    studio_id INT,
+    -- studio_id INT,
     licensors VARCHAR(255),
-    FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id),
-    FOREIGN KEY (producer_id) REFERENCES Producers(producer_id),
+    FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id)
     FOREIGN KEY (studio_id) REFERENCES Studios(studio_id)
 );
 
@@ -64,17 +63,8 @@ CREATE TABLE Anime_Metadata (
 
 -- Table 8: Anime Genres
 CREATE TABLE Anime_Genres (
+    genre_id INT PRIMARY KEY AUTO_INCREMENT,
     anime_id INT,
     genres VARCHAR(255),
-    FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id)
-);
-
--- Table 9: User Ratings
-CREATE TABLE User_Ratings (
-    user_id INT,
-    anime_id INT,
-    anime_title VARCHAR(255),
-    rating FLOAT,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id),
     FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id)
 );
