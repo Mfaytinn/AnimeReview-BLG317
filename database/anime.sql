@@ -5,7 +5,7 @@ USE anime_db;
 CREATE TABLE Users (
     user_id INT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
-    gender ENUM('Male', 'Female', 'Other'),
+    gender ENUM('Male', 'Female', 'Non-Binary','Other'),
     birthday DATE DEFAULT NULL,
     place VARCHAR(50),
     joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -25,7 +25,7 @@ CREATE TABLE Anime_Information (
 
 -- Table 3: Anime Scores
 CREATE TABLE Anime_Scores (
-    score_id INT PRIMARY KEY AUTO_INCREMENT,
+    score_id INT PRIMARY KEY,
     user_id INT,
     anime_id INT,
     score TINYINT,
@@ -36,24 +36,24 @@ CREATE TABLE Anime_Scores (
 
 -- Table 4: Producers
 CREATE TABLE Producers (
-    producer_id INT PRIMARY KEY AUTO_INCREMENT,
-    producer_name VARCHAR(255) NOT NULL
+    producer_id INT PRIMARY KEY,
+    producer_name TEXT NOT NULL
 );
 
 -- Table 5: Studios
 CREATE TABLE Studios (
-    studio_id INT PRIMARY KEY AUTO_INCREMENT,
+    studio_id INT PRIMARY KEY,
     studio_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE licensors (
-    licensor_id INT PRIMARY KEY AUTO_INCREMENT,
+    licensor_id INT PRIMARY KEY,
     licensor_name VARCHAR(255) NOT NULL
 );
 
 -- Table 6: Anime Production
 CREATE TABLE Anime_Production (
-    production_id INT PRIMARY KEY AUTO_INCREMENT,
+    production_id INT PRIMARY KEY,
     anime_id INT,
     producer_id INT,
     studio_id INT,
@@ -66,7 +66,7 @@ CREATE TABLE Anime_Production (
 
 -- Table 7: Anime Metadata
 CREATE TABLE Anime_Metadata (
-    metadata_id INT PRIMARY KEY AUTO_INCREMENT,
+    metadata_id INT PRIMARY KEY,
     anime_id INT,
     episodes INT,
     aired VARCHAR(255),
