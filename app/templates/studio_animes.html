@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block title %}Studio's Anime List{% endblock %}
+
+{% block header %}
+    <h1>Anime from Studio</h1>
+{% endblock %}
+
+{% block content %}
+    {% if animes %}
+        <div class="anime-list">
+            {% for anime in animes %}
+                <div class="anime-card">
+                    <h2>{{ anime['anime_name'] }}</h2>
+                    <p><strong>English Name:</strong> {{ anime['english_name'] }}</p>
+                    <p><strong>Other Name:</strong> {{ anime['other_name'] }}</p>
+                    <p><strong>Genres:</strong> {{ anime['genres'] }}</p>
+                    <p><strong>Type:</strong> {{ anime['type_anime'] }}</p>
+                    <p><strong>Synopsis:</strong> {{ anime['synopsis'][:100] }}...</p>
+                    <a href="{{ url_for('anime_page', anime_id=anime['anime_id']) }}">Read more</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No anime found for this studio.</p>
+    {% endif %}
+{% endblock %}

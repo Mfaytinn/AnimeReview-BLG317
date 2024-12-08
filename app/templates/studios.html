@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+
+{% block title %}Studio List{% endblock %}
+
+{% block header %}
+    <h1>List of Anime Studios</h1>
+{% endblock %}
+
+{% block content %}
+    {% if studios %}
+        <div class="studio-list">
+            {% for studio in studios %}
+                <div class="studio-card">
+                    <h2>{{ studio['studio_name'] }}</h2>
+                    <!-- Corrected url_for to use 'studio_animes_page' -->
+                    <a href="{{ url_for('studio_animes_page', studio_id=studio['studio_id']) }}">View Anime from this Studio</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No studios found.</p>
+    {% endif %}
+{% endblock %}

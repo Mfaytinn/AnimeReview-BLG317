@@ -8,6 +8,10 @@ def create_app():
     # Explicitly add endpoint names for each route
     app.add_url_rule("/", view_func=views.index_page, endpoint="index_page")
     app.add_url_rule("/add", view_func=views.add_anime_page, methods=["GET", "POST"], endpoint="add_anime")
+    app.add_url_rule("/studios", view_func=views.studios_page, endpoint="studios_page")
+    app.add_url_rule("/studios/<int:studio_id>", view_func=views.studio_animes_page, endpoint="studio_animes_page")
+    app.add_url_rule("/anime/<int:anime_id>", view_func=views.anime_page, endpoint="anime_page")
+
     return app
 
 if __name__ == "__main__":

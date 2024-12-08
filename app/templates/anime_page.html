@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ anime_info['anime_name'] }}{% endblock %}
+
+{% block header %}
+    <h1>{{ anime_info['anime_name'] }}</h1>
+{% endblock %}
+
+{% block content %}
+    <h2>{{ anime_info['english_name'] }}</h2>
+    <p><strong>Other Names:</strong> {{ anime_info['other_name'] }}</p>
+    <p><strong>Type:</strong> {{ anime_info['type_anime'] }}</p>
+    <p><strong>Genres:</strong> {{ anime_info['genres'] }}</p>
+    <p><strong>Synopsis:</strong> {{ anime_info['synopsis'] }}</p>
+
+    <h3>Anime Metadata</h3>
+    <p><strong>Episodes:</strong> {{ anime_metadata['episodes'] }}</p>
+    <p><strong>Aired:</strong> {{ anime_metadata['aired'] }}</p>
+    <p><strong>Premiered:</strong> {{ anime_metadata['premiered'] }}</p>
+    <p><strong>Source:</strong> {{ anime_metadata['source'] }}</p>
+
+{% endblock %}

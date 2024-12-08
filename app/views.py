@@ -62,3 +62,102 @@ def add_anime_page():
                 connection.close()
 
     return render_template("add_anime.html")
+
+def studios_page():
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return render_template('studios.html', studios=[])
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM Studios")
+        studios = cursor.fetchall()
+    except Error as e:
+        flash(f"Query failed: {e}", category="danger")
+        studios = []
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template('studios.html', studios=studios)
+
+def studio_animes_page(studio_id):
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return render_template('studio_animes.html', animes=[])
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT ai.anime_id, ai.anime_name, ai.english_name, ai.other_name, ai.synopsis, ai.type_anime 
+            FROM Anime_Information ai
+            JOIN Anime_Production ap ON ai.anime_id = ap.anime_id
+            WHERE ap.studio_id = %s
+        """, (studio_id,))
+        animes = cursor.fetchall()
+
+    except Error as e:
+        flash(f"Query failed: {e}", category="danger")
+        animes = []
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template('studio_animes.html', animes=animes)
+
+
+def anime_page(anime_id):
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return render_template('anime_page.html', anime_info={}, anime_metadata={}, studio_id=None)
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT ai.anime_name, ai.english_name, ai.other_name, ai.synopsis, ai.type_anime, ai.genres,
+                   am.episodes, am.aired, am.premiered, am.source,
+                   ap.studio_id
+            FROM Anime_Information ai
+            JOIN Anime_Metadata am ON ai.anime_id = am.anime_id
+            LEFT JOIN Anime_Production ap ON ai.anime_id = ap.anime_id
+            WHERE ai.anime_id = %s
+        """, (anime_id,))
+        result = cursor.fetchone()
+
+        if result:
+            anime_info = {
+                'anime_name': result['anime_name'],
+                'english_name': result['english_name'],
+                'other_name': result['other_name'],
+                'synopsis': result['synopsis'],
+                'type_anime': result['type_anime'],
+                'genres': result['genres']
+            }
+            anime_metadata = {
+                'episodes': result['episodes'],
+                'aired': result['aired'],
+                'premiered': result['premiered'],
+                'source': result['source']
+            }
+            studio_id = result['studio_id']  # This is the studio ID related to the anime
+        else:
+            anime_info = {}
+            anime_metadata = {}
+            studio_id = None
+
+    except Error as e:
+        flash(f"Query failed: {e}", category="danger")
+        anime_info = {}
+        anime_metadata = {}
+        studio_id = None
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template('anime_page.html', anime_info=anime_info, anime_metadata=anime_metadata, studio_id=studio_id)

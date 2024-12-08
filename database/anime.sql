@@ -75,7 +75,8 @@ CREATE TABLE Anime_Metadata (
     FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id)
 );
 
-
+ALTER TABLE Producers MODIFY producer_name VARCHAR(255) NULL;
+ALTER TABLE Licensors MODIFY licensor_name VARCHAR(255) NULL;
 
 -- Table 8: Anime Genres
 -- CREATE TABLE Anime_Genres (
