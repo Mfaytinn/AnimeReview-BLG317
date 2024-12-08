@@ -161,3 +161,32 @@ def anime_page(anime_id):
             connection.close()
 
     return render_template('anime_page.html', anime_info=anime_info, anime_metadata=anime_metadata, studio_id=studio_id)
+
+
+def top_100_page():
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return render_template('top_100.html', top_animes=[])
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT ai.anime_id, ai.anime_name, ai.english_name, ai.synopsis, 
+                   AVG(ascore.score) as avg_score
+            FROM Anime_Information ai
+            JOIN Anime_Scores ascore ON ai.anime_id = ascore.anime_id
+            GROUP BY ai.anime_id
+            ORDER BY avg_score DESC
+            LIMIT 100
+        """)
+        top_animes = cursor.fetchall()
+    except Error as e:
+        flash(f"Query failed: {e}", category="danger")
+        top_animes = []
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template('top_100.html', top_animes=top_animes)

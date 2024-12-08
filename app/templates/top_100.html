@@ -1,0 +1,40 @@
+{% extends 'layout.html' %}
+
+{% block title %}Top 100 Animes{% endblock %}
+
+{% block header %}
+    <h1>Top 100 Animes</h1>
+{% endblock %}
+
+{% block content %}
+    {% if top_animes %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Anime Name</th>
+                    <th>English Name</th>
+                    <th>Average Score</th>
+                    <th class="synopsis-column">Synopsis</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for anime in top_animes %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <a href="{{ url_for('anime_page', anime_id=anime['anime_id']) }}">
+                                {{ anime['anime_name'] }}
+                            </a>
+                        </td>
+                        <td>{{ anime['english_name'] }}</td>
+                        <td>{{ anime['avg_score'] | round(2) if anime['avg_score'] is not none else 'N/A' }}</td>
+                        <td class="synopsis-column">{{ anime['synopsis'][:100] }}...</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No top animes found.</p>
+    {% endif %}
+{% endblock %}
