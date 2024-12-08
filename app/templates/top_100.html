@@ -13,7 +13,7 @@
                 <tr>
                     <th>Rank</th>
                     <th>Anime Name</th>
-                    <th>English Name</th>
+                    <th>Type</th>
                     <th>Average Score</th>
                     <th class="synopsis-column">Synopsis</th>
                 </tr>
@@ -27,7 +27,7 @@
                                 {{ anime['anime_name'] }}
                             </a>
                         </td>
-                        <td>{{ anime['english_name'] }}</td>
+                        <td>{{ anime['type_anime'] }}</td>
                         <td>{{ anime['avg_score'] | round(2) if anime['avg_score'] is not none else 'N/A' }}</td>
                         <td class="synopsis-column">{{ anime['synopsis'][:100] }}...</td>
                     </tr>

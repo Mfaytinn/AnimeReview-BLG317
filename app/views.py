@@ -172,7 +172,7 @@ def top_100_page():
     try:
         cursor = connection.cursor(dictionary=True)
         cursor.execute("""
-            SELECT ai.anime_id, ai.anime_name, ai.english_name, ai.synopsis, 
+            SELECT ai.anime_id, ai.anime_name, ai.type_anime, ai.synopsis, 
                    AVG(ascore.score) as avg_score
             FROM Anime_Information ai
             JOIN Anime_Scores ascore ON ai.anime_id = ascore.anime_id
