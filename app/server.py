@@ -1,6 +1,5 @@
 from flask import Flask
 import views
-from database import get_db_connection
 
 def create_app():
     app = Flask(__name__)
@@ -9,7 +8,6 @@ def create_app():
     # Explicitly add endpoint names for each route
     app.add_url_rule("/", view_func=views.index_page, endpoint="index_page")
     app.add_url_rule("/add", view_func=views.add_anime_page, methods=["GET", "POST"], endpoint="add_anime")
-    # first commıt erinc
     return app
 
 if __name__ == "__main__":

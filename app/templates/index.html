@@ -9,7 +9,7 @@
 {% block content %}
     <ul>
         {% for anime in anime_information %}
-        <li>{{ anime['name'] }} - {{ anime['english_name'] }} - {{ anime['other_name'] }} - {{ anime['synopsis'] }} - {{ anime['type'] }}</li>
+        <li>{{ anime['anime_name'] }} - {{ anime['english_name'] }} - {{ anime['other_name'] }} - {{ anime['synopsis'] }} - {{ anime['type_anime'] }}</li>
         {% endfor %}
     </ul>
 {% endblock %}

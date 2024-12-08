@@ -14,7 +14,7 @@ CREATE TABLE Users (
 
 -- Table 2: Anime Information 
 CREATE TABLE Anime_Information (
-    anime_id INT PRIMARY KEY,
+    anime_id INT PRIMARY KEY AUTO_INCREMENT,
     anime_name VARCHAR(255) NOT NULL,
     english_name VARCHAR(255),
     other_name VARCHAR(255),

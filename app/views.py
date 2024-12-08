@@ -1,7 +1,6 @@
-from flask import render_template, request, redirect, url_for, flash, current_app
+from flask import render_template, request, redirect, url_for, flash
 from database import get_db_connection
 from mysql.connector import Error
-
 
 def index_page():
     connection = get_db_connection()
@@ -11,7 +10,7 @@ def index_page():
 
     try:
         cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM anime_information")
+        cursor.execute("SELECT * FROM Anime_Information")
         anime_information = cursor.fetchall()
     except Error as e:
         flash(f"Query failed: {e}", category="danger")
@@ -23,18 +22,18 @@ def index_page():
 
     return render_template('index.html', anime_information=anime_information)
 
-
 def add_anime_page():
     if request.method == "POST":
-        name = request.form.get("name")
+        anime_name = request.form.get("anime_name")
         english_name = request.form.get("english_name")
         other_name = request.form.get("other_name")
         synopsis = request.form.get("synopsis")
-        type = request.form.get("type")
+        type_anime = request.form.get("type_anime")
+        genres = request.form.get("genres")
 
         # Form validation
-        if not name or not synopsis:
-            flash("Name and Synopsis are necessary.", "warning")
+        if not anime_name or not synopsis:
+            flash("Anime Name and Synopsis are necessary.", "warning")
             return render_template("add_anime.html")
 
         connection = get_db_connection()
@@ -42,16 +41,19 @@ def add_anime_page():
             flash("Couldn't connect to the database!", "danger")
             return render_template("add_anime.html")
 
-        # Adding animes to the database
+        # Adding anime to the database
         try:
             cursor = connection.cursor()
             cursor.execute(
-                "INSERT INTO anime_information (name, english_name, other_name, synopsis, type) VALUES (%s, %s, %s, %s, %s)",
-                (name, english_name, other_name, synopsis, type),
+                """
+                INSERT INTO Anime_Information (anime_name, english_name, other_name, synopsis, type_anime, genres) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (anime_name, english_name, other_name, synopsis, type_anime, genres),
             )
             connection.commit()
             flash("Anime added successfully!", "success")
-            return redirect(url_for("index_page"))  # Correct endpoint name here
+            return redirect(url_for("index_page"))
         except Error as e:
             flash(f"An exception occurred while adding the anime: {e}", "danger")
         finally:
