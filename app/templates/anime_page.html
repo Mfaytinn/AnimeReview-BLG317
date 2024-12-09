@@ -19,4 +19,30 @@
     <p><strong>Premiered:</strong> {{ anime_metadata['premiered'] }}</p>
     <p><strong>Source:</strong> {{ anime_metadata['source'] }}</p>
 
+    <h3>Reviews</h3>
+    
+    {% if reviews %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Reviewer</th>
+                    <th>Score</th>
+                    <th>Review</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for review in reviews %}
+                    <tr>
+                        <td>{{ review['username'] }}</td>
+                        <td>{{ review['score'] }}</td>
+                        <td>{{ review['comment'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No reviews found.</p>
+    {% endif %}
+    
+    
 {% endblock %}
