@@ -145,11 +145,21 @@ def anime_page(anime_id):
                 'source': result['source']
             }
             studio_id = result['studio_id']  # This is the studio ID related to the anime
+            
+            cursor.execute("""
+            SELECT u.username, u.user_id, scores.anime_id, scores.score, scores.comment
+            FROM Anime_Scores AS scores
+            LEFT JOIN Users AS u ON scores.user_id = u.user_id
+            WHERE scores.anime_id = %s
+            LIMIT 5
+            """, (anime_id,))
+
+            review_result = cursor.fetchall()
         else:
             anime_info = {}
             anime_metadata = {}
             studio_id = None
-
+            review_result = []
     except Error as e:
         flash(f"Query failed: {e}", category="danger")
         anime_info = {}
@@ -160,7 +170,8 @@ def anime_page(anime_id):
             cursor.close()
             connection.close()
 
-    return render_template('anime_page.html', anime_info=anime_info, anime_metadata=anime_metadata, studio_id=studio_id)
+    return render_template('anime_page.html', anime_info=anime_info, anime_metadata=anime_metadata, studio_id=studio_id
+                           , reviews=review_result)
 
 
 def top_100_page():
