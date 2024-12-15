@@ -201,3 +201,46 @@ def top_100_page():
             connection.close()
 
     return render_template('top_100.html', top_animes=top_animes)
+
+
+def search():
+    search_query = request.args.get('query')
+
+    # If the search term is empty
+    if not search_query:
+        flash("Please enter an anime name to search.", category="warning")
+        return redirect(url_for('index_page'))
+
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('index_page'))
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT ai.anime_id, ai.anime_name, ai.english_name
+            FROM Anime_Information ai
+            WHERE LOWER(ai.anime_name) LIKE LOWER(CONCAT('%', %s, '%'))
+            ORDER BY LENGTH(ai.anime_name)
+        """, (search_query,))
+
+        results = cursor.fetchall()
+
+        if results:
+            return render_template('search_results.html', results=results, query=search_query)
+        else:
+            # No anime found
+            flash(f"No anime found with the name '{search_query}'", category="warning")
+            return redirect(url_for('index_page'))
+
+    except Error as e:
+        flash(f"Query failed: {e}", category="danger")
+        return redirect(url_for('index_page'))
+
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
