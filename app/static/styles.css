@@ -3,6 +3,7 @@ body{
     margin:20px;
 }
 h1{
+    margin-top: 40px;
     color:#333;
 }
 form label{
@@ -40,13 +41,10 @@ footer{
     color: #856404;
 }
 
-
-
-
-
 nav {
-    background-color: #333;
+    background-color: #001f3f;
     padding: 10px;
+    margin: -20px;
     text-align: center;
 }
 
@@ -54,6 +52,7 @@ nav a {
     color: white;
     margin: 0 15px;
     text-decoration: none;
+    font-weight: 750;
     font-size: 16px;
 }
 
@@ -177,8 +176,85 @@ table th {
 }
 
 .synopsis-column {
-    max-width: 300px; /* Adjust the size to your liking */
-    white-space: nowrap; /* Prevent wrapping */
-    overflow: hidden; /* Hide extra text */
-    text-overflow: ellipsis; /* Show "..." for truncated text */
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* Navbar */
+
+nav {
+    background-color: #001f3f;
+    padding: 10px;
+    margin: -20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-left a {
+    color: white;
+    margin-right: 20px;
+    text-decoration: none;
+    font-weight: 750;
+    font-size: 16px;
+}
+
+.navbar-left form {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-left form input {
+    margin-right: 10px;
+    width: 400px;
+}
+
+.navbar-right {
+    margin-top: revert;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.navbar-right a {
+    color: white;
+    margin-left: 15px;
+    text-decoration: none;
+    font-weight: 750;
+    font-size: 16px;
+}
+
+.navbar-right a:hover {
+    text-decoration: underline;
+}
+
+.navbar-logo img {
+    height: 100px;
+    width: 120px;
+}
+
+.navbar-left a, .navbar-right a {
+    margin: 0 10px;
+}
+
+@media (max-width: 768px) {
+    .navbar-left {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .navbar-right {
+        display: none;
+    }
+}
+
+.me-2 {
+    margin-left: 15px;
+    margin-right: .5rem !important;
+    margin-top: 11px;
 }
