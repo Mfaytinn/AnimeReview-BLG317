@@ -12,6 +12,7 @@ def create_app():
     app.add_url_rule("/studios/<int:studio_id>", view_func=views.studio_animes_page, endpoint="studio_animes_page")
     app.add_url_rule("/anime/<int:anime_id>", view_func=views.anime_page, endpoint="anime_page")
     app.add_url_rule("/top100", view_func=views.top_100_page, endpoint="top_100_page")
+    app.add_url_rule("/search", view_func=views.search, methods=["GET"], endpoint="search")
 
     return app
 
