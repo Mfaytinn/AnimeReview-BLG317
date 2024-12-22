@@ -1,4 +1,5 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, session
+from werkzeug.security import generate_password_hash, check_password_hash
 from database import get_db_connection
 from mysql.connector import Error
 
@@ -244,6 +245,36 @@ def search():
         if connection.is_connected():
             cursor.close()
             connection.close()
+
+def signin_page():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        connection = get_db_connection()
+        if connection is None:
+            flash("Database connection failed!", "danger")
+            return render_template("signin.html")
+
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM Accounts WHERE username = %s", (username,))
+            user = cursor.fetchone()
+
+            if user and check_password_hash(user['password'], password):
+                session['user_id'] = user['user_id']
+                flash("Signin successful!", "success")
+                return redirect(url_for("index_page"))
+            else:
+                flash("Invalid username or password.", "danger")
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
+
+    return render_template("signin.html")
+
+
 def signup_page():
     if request.method == "POST":
         username = request.form.get("username")
