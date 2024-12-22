@@ -7,25 +7,31 @@
 {% endblock %}
 
 {% block content %}
-    <form action="{{ url_for('add_anime') }}" method="post">
-        <label for="anime_name">Anime Name:</label>
-        <input type="text" id="anime_name" name="anime_name" required><br>
-
-        <label for="english_name">English Name:</label>
-        <input type="text" id="english_name" name="english_name"><br>
-
-        <label for="other_name">Other Name:</label>
-        <input type="text" id="other_name" name="other_name"><br>
-
-        <label for="synopsis">Synopsis:</label>
-        <textarea id="synopsis" name="synopsis" rows="4" cols="50" required></textarea><br>
-
-        <label for="type_anime">Type:</label>
-        <input type="text" id="type_anime" name="type_anime"><br>
-
-        <label for="genres">Genres:</label>
-        <input type="text" id="genres" name="genres"><br>
-
-        <button type="submit">Add Anime</button>
+    <form action="{{ url_for('add_anime') }}" method="post" class="container mt-4">
+        <div class="mb-3">
+            <label for="anime_name" class="form-label">Anime Name</label>
+            <input type="text" id="anime_name" name="anime_name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="english_name" class="form-label">English Name</label>
+            <input type="text" id="english_name" name="english_name" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="other_name" class="form-label">Other Name</label>
+            <input type="text" id="other_name" name="other_name" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="synopsis" class="form-label">Synopsis</label>
+            <textarea id="synopsis" name="synopsis" class="form-control" rows="4" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="type_anime" class="form-label">Type</label>
+            <input type="text" id="type_anime" name="type_anime" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="genres" class="form-label">Genres</label>
+            <input type="text" id="genres" name="genres" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Anime</button>
     </form>
 {% endblock %}
