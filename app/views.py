@@ -244,3 +244,33 @@ def search():
         if connection.is_connected():
             cursor.close()
             connection.close()
+def signup_page():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+
+        if password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return render_template("signup.html")
+
+        hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
+        connection = get_db_connection()
+        if connection is None:
+            flash("Database connection failed!", "danger")
+            return render_template("signup.html")
+
+        try:
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO Accounts (username, password) VALUES (%s, %s)", (username, hashed_password))
+            connection.commit()
+            flash("Signup successful! Please signin.", "success")
+            return redirect(url_for("signin_page"))
+        except Error as e:
+            flash(f"Signup failed: {e}", "danger")
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
+
+    return render_template("signup.html")
