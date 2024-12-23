@@ -12,11 +12,20 @@
             {% for studio in studios %}
                 <div class="studio-card">
                     <h2>{{ studio['studio_name'] }}</h2>
-                    <!-- Corrected url_for to use 'studio_animes_page' -->
-                    <a href="{{ url_for('studio_animes_page', studio_id=studio['studio_id']) }}">View Anime from this Studio</a>
+                    <a href="{{ url_for('studio_animes_page', studio_id=studio['studio_id']) }}" class="btn btn-primary">View Anime from this Studio</a>
                 </div>
             {% endfor %}
         </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination">
+            {% if current_page > 1 %}
+                <a href="{{ url_for('studios_page', page=current_page - 1) }}" class="btn btn-primary">Previous</a>
+            {% endif %}
+            {% if has_next %}
+                <a href="{{ url_for('studios_page', page=current_page + 1) }}" class="btn btn-primary">Next</a>
+            {% endif %}
+        </div>        
     {% else %}
         <p>No studios found.</p>
     {% endif %}

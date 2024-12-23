@@ -7,21 +7,40 @@ def index_page():
     connection = get_db_connection()
     if connection is None:
         flash("Couldn't connect to the database!", category="danger")
-        return render_template('index.html', anime_information=[])
+        return render_template('index.html', anime_information=[], current_page=1, has_next=False)
 
     try:
+        # Get the current page from query parameters (default to 1)
+        current_page = int(request.args.get('page', 1))
+        per_page = 12  # Number of records per page
+        offset = (current_page - 1) * per_page
+
         cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Anime_Information")
+        # Fetch only the current page's results
+        cursor.execute("SELECT * FROM Anime_Information LIMIT %s OFFSET %s", (per_page, offset))
         anime_information = cursor.fetchall()
+
+        # Check if there's a next page
+        cursor.execute("SELECT COUNT(*) AS total FROM Anime_Information")
+        total_records = cursor.fetchone()['total']
+        has_next = (current_page * per_page) < total_records
+
     except Error as e:
         flash(f"Query failed: {e}", category="danger")
         anime_information = []
+        current_page = 1
+        has_next = False
     finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
 
-    return render_template('index.html', anime_information=anime_information)
+    return render_template(
+        'index.html',
+        anime_information=anime_information,
+        current_page=current_page,
+        has_next=has_next
+    )
 
 def add_anime_page():
     if request.method == "POST":
@@ -68,21 +87,40 @@ def studios_page():
     connection = get_db_connection()
     if connection is None:
         flash("Couldn't connect to the database!", category="danger")
-        return render_template('studios.html', studios=[])
+        return render_template('studios.html', studios=[], current_page=1, has_next=False)
 
     try:
+        # Get the current page from query parameters (default to 1)
+        current_page = int(request.args.get('page', 1))
+        per_page = 12  # Number of records per page
+        offset = (current_page - 1) * per_page
+
         cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Studios")
+        # Fetch only the current page's results
+        cursor.execute("SELECT * FROM Studios LIMIT %s OFFSET %s", (per_page, offset))
         studios = cursor.fetchall()
+
+        # Check if there's a next page
+        cursor.execute("SELECT COUNT(*) AS total FROM Studios")
+        total_records = cursor.fetchone()['total']
+        has_next = (current_page * per_page) < total_records
+
     except Error as e:
         flash(f"Query failed: {e}", category="danger")
         studios = []
+        current_page = 1
+        has_next = False
     finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
 
-    return render_template('studios.html', studios=studios)
+    return render_template(
+        'studios.html',
+        studios=studios,
+        current_page=current_page,
+        has_next=has_next
+    )
 
 def studio_animes_page(studio_id):
     connection = get_db_connection()
