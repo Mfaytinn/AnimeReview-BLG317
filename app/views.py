@@ -153,17 +153,15 @@ def anime_page(anime_id):
     connection = get_db_connection()
     if connection is None:
         flash("Couldn't connect to the database!", category="danger")
-        return render_template('anime_page.html', anime_info={}, anime_metadata={}, studio_id=None)
+        return render_template('anime_page.html', anime_info={}, anime_metadata={}, reviews=[], anime_id=anime_id)
 
     try:
         cursor = connection.cursor(dictionary=True)
         cursor.execute("""
             SELECT ai.anime_name, ai.english_name, ai.other_name, ai.synopsis, ai.type_anime, ai.genres,
-                   am.episodes, am.aired, am.premiered, am.source,
-                   ap.studio_id
+                   am.episodes, am.aired, am.premiered, am.source
             FROM Anime_Information ai
             JOIN Anime_Metadata am ON ai.anime_id = am.anime_id
-            LEFT JOIN Anime_Production ap ON ai.anime_id = ap.anime_id
             WHERE ai.anime_id = %s
         """, (anime_id,))
         result = cursor.fetchone()
@@ -183,35 +181,73 @@ def anime_page(anime_id):
                 'premiered': result['premiered'],
                 'source': result['source']
             }
-            studio_id = result['studio_id']  # This is the studio ID related to the anime
-            
-            cursor.execute("""
-            SELECT u.username, u.user_id, scores.anime_id, scores.score, scores.comment
+        else:
+            flash("Anime not found!", category="danger")
+            return redirect(url_for('home'))
+
+        cursor.execute("""
+            SELECT u.username, scores.score, scores.comment
             FROM Anime_Scores AS scores
-            LEFT JOIN Users AS u ON scores.user_id = u.user_id
+            LEFT JOIN Users u ON scores.user_id = u.user_id
             WHERE scores.anime_id = %s
             LIMIT 5
-            """, (anime_id,))
+        """, (anime_id,))
+        reviews = cursor.fetchall()
 
-            review_result = cursor.fetchall()
-        else:
-            anime_info = {}
-            anime_metadata = {}
-            studio_id = None
-            review_result = []
     except Error as e:
-        flash(f"Query failed: {e}", category="danger")
+        flash(f"Database error: {e}", category="danger")
         anime_info = {}
         anime_metadata = {}
-        studio_id = None
+        reviews = []
     finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
 
-    return render_template('anime_page.html', anime_info=anime_info, anime_metadata=anime_metadata, studio_id=studio_id
-                           , reviews=review_result)
+    return render_template(
+        'anime_page.html',
+        anime_info=anime_info,
+        anime_metadata=anime_metadata,
+        reviews=reviews,
+        anime_id=anime_id 
+    )
 
+
+
+def add_review(anime_id):
+    score = request.form.get('score')
+    comment = request.form.get('comment')
+
+    # Get the user_id from the session for now it is hardcoded
+    user_id = 99999  
+    print("debug: user_id =", user_id)
+    print("debug: anime_id =", anime_id)
+
+    if not score or not comment:
+        flash("Score and comment are required!", category="danger")
+        return redirect(url_for('anime_page', anime_id=anime_id))
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('anime_page', anime_id=anime_id))
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute("""
+            INSERT INTO Anime_Scores (user_id, anime_id, score, comment)
+            VALUES (%s, %s, %s, %s)
+        """, (user_id, anime_id, score, comment))
+        connection.commit()
+        flash("Your review has been submitted!", category="success")
+    except Error as e:
+        flash(f"Failed to submit review: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('anime_page', anime_id=anime_id))
 
 def top_100_page():
     connection = get_db_connection()

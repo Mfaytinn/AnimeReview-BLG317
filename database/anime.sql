@@ -86,6 +86,11 @@ CREATE TABLE Accounts (
 ALTER TABLE Producers MODIFY producer_name VARCHAR(255) NULL;
 ALTER TABLE Licensors MODIFY licensor_name VARCHAR(255) NULL;
 
+-- after creating the tables, we can convert to auto increment
+ALTER TABLE Anime_Scores
+MODIFY COLUMN score_id INT AUTO_INCREMENT;
+
+
 -- Table 8: Anime Genres
 -- CREATE TABLE Anime_Genres (
 --     genre_id INT PRIMARY KEY AUTO_INCREMENT,
