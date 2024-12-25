@@ -8,17 +8,34 @@
 
 {% block content %}
     <form action="{{ url_for('signup_page') }}" method="POST" class="signup-form">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+        <div class="mb-3">
+            <label for="username" class="form-label">Username:</label>
+            <input type="text" id="username" name="username" class="form-control" required>
         </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password:</label>
+            <input type="password" id="password" name="password" class="form-control" required>
         </div>
-        <div>
-            <label for="confirm_password">Confirm Password:</label>
-            <input type="password" id="confirm_password" name="confirm_password" required>
+        <div class="mb-3">
+            <label for="confirm_password" class="form-label">Confirm Password:</label>
+            <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="gender" class="form-label">Gender:</label>
+            <select id="gender" name="gender" class="form-select" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Non-Binary">Non-Binary</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="birthday" class="form-label">Birthday:</label>
+            <input type="date" id="birthday" name="birthday" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="place" class="form-label">Place:</label>
+            <input type="text" id="place" name="place" class="form-control">
         </div>
         <button type="submit" class="btn btn-primary">Signup</button>
     </form>

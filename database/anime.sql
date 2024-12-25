@@ -100,4 +100,7 @@ ADD COLUMN password VARCHAR(255) NOT NULL;
 ALTER TABLE Users
 ADD COLUMN role ENUM('user', 'admin') DEFAULT 'user';
 
+ALTER TABLE Users
+ADD CONSTRAINT unique_username UNIQUE (username);
+
 DROP TABLE Accounts;

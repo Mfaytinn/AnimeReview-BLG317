@@ -18,6 +18,11 @@ def create_app():
     app.add_url_rule("/anime/<int:anime_id>/add_review", view_func=views.add_review, methods=["POST"], endpoint="add_review")
     app.add_url_rule("/profile", view_func=views.profile_page, endpoint="profile_page")
     app.add_url_rule("/logout", view_func=views.logout, endpoint="logout")
+    
+    app.add_url_rule("/profile/update", view_func=views.update_profile, methods=["POST"], endpoint="update_profile")
+    app.add_url_rule("/profile/delete", view_func=views.delete_account, methods=["POST"], endpoint="delete_account")
+
+
     return app
 
 if __name__ == "__main__":

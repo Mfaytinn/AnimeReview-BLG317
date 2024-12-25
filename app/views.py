@@ -349,30 +349,50 @@ def signin_page():
 
     return render_template("signin.html")
 
-
 def signup_page():
     if request.method == "POST":
+        # Collect form data
         username = request.form.get("username")
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
+        gender = request.form.get("gender")
+        birthday = request.form.get("birthday") or None
+        place = request.form.get("place") or None
 
+        # Validate password confirmation
         if password != confirm_password:
             flash("Passwords do not match.", "danger")
             return render_template("signup.html")
 
-        hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
+        # Connect to the database
         connection = get_db_connection()
         if connection is None:
             flash("Database connection failed!", "danger")
             return render_template("signup.html")
 
         try:
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO Users (username, password) VALUES (%s, %s)", (username, hashed_password))
+            cursor = connection.cursor(dictionary=True)
+            
+            # Check if the username already exists
+            cursor.execute("SELECT * FROM Users WHERE username = %s", (username,))
+            existing_user = cursor.fetchone()
+            
+            if existing_user:
+                flash("Username already exists. Please choose a different one.", "danger")
+                return render_template("signup.html")
+
+            # Hash the password
+            hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
+
+            # Insert new user into the database
+            cursor.execute("""
+                INSERT INTO Users (username, password, gender, birthday, place, days_watched)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (username, hashed_password, gender, birthday, place, 0))  # Default days_watched to 0
             connection.commit()
-            flash("Signup successful! Please signin.", "success")
+            flash("Signup successful! Please sign in.", "success")
             return redirect(url_for("signin_page"))
-        except Error as e:
+        except mysql.connector.Error as e:
             flash(f"Signup failed: {e}", "danger")
         finally:
             if connection.is_connected():
@@ -380,6 +400,7 @@ def signup_page():
                 connection.close()
 
     return render_template("signup.html")
+
 
 def profile_page():
     if 'user_id' not in session:
@@ -406,6 +427,51 @@ def profile_page():
             cursor.close()
             connection.close()
 
+def update_profile():
+    # Ensure the user is logged in
+    if 'user_id' not in session:
+        flash("You must be logged in to update your profile.", "warning")
+        return redirect(url_for('signin_page'))
+
+    # Get form data
+    username = request.form.get('username')
+    gender = request.form.get('gender')
+    birthday = request.form.get('birthday')
+    place = request.form.get('place')
+
+    # Update user data in the database
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("""
+        UPDATE Users
+        SET username = %s, gender = %s, birthday = %s, place = %s
+        WHERE user_id = %s
+    """, (username, gender, birthday, place, session['user_id']))
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    flash("Profile updated successfully!", "success")
+    return redirect(url_for('profile_page'))
+
+def delete_account():
+    # Ensure the user is logged in
+    if 'user_id' not in session:
+        flash("You must be logged in to delete your account.", "warning")
+        return redirect(url_for('signin_page'))
+
+    # Delete user from the database
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM Users WHERE user_id = %s", (session['user_id'],))
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    # Clear session and redirect
+    session.clear()
+    flash("Your account has been deleted.", "info")
+    return redirect(url_for('signin_page'))
 
 def logout():
     # Clear all session data
