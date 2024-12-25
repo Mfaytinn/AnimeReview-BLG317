@@ -392,7 +392,7 @@ def signup_page():
             connection.commit()
             flash("Signup successful! Please sign in.", "success")
             return redirect(url_for("signin_page"))
-        except mysql.connector.Error as e:
+        except Error as e:
             flash(f"Signup failed: {e}", "danger")
         finally:
             if connection.is_connected():
@@ -436,23 +436,81 @@ def update_profile():
     # Get form data
     username = request.form.get('username')
     gender = request.form.get('gender')
-    birthday = request.form.get('birthday')
-    place = request.form.get('place')
+    birthday = request.form.get('birthday') or None  # Handle empty birthday
+    place = request.form.get('place') or None        # Handle empty place
 
-    # Update user data in the database
     connection = get_db_connection()
-    cursor = connection.cursor()
-    cursor.execute("""
-        UPDATE Users
-        SET username = %s, gender = %s, birthday = %s, place = %s
-        WHERE user_id = %s
-    """, (username, gender, birthday, place, session['user_id']))
-    connection.commit()
-    cursor.close()
-    connection.close()
+    cursor = connection.cursor(dictionary=True)
 
-    flash("Profile updated successfully!", "success")
+    try:
+        # Check if the new username already exists (excluding the current user)
+        cursor.execute("""
+            SELECT * FROM Users 
+            WHERE username = %s AND user_id != %s
+        """, (username, session['user_id']))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            flash("This username is already taken. Please choose a different one.", "danger")
+            return redirect(url_for('profile_page'))
+
+        # Update user data in the database
+        cursor.execute("""
+            UPDATE Users
+            SET username = %s, gender = %s, birthday = %s, place = %s
+            WHERE user_id = %s
+        """, (username, gender, birthday, place, session['user_id']))
+        connection.commit()
+
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('profile_page'))
+    except Error as e:
+        flash(f"An error occurred while updating the profile: {e}", "danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
     return redirect(url_for('profile_page'))
+
+def change_password():
+    # Ensure the user is logged in
+    if 'user_id' not in session:
+        flash("You must be logged in to change your password.", "warning")
+        return redirect(url_for('signin_page'))
+
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    if new_password != confirm_password:
+        flash("New passwords do not match.", "danger")
+        return redirect(url_for('profile_page'))
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT password FROM Users WHERE user_id = %s", (session['user_id'],))
+        user = cursor.fetchone()
+
+        if not user or not check_password_hash(user['password'], current_password):
+            flash("Current password is incorrect.", "danger")
+            return redirect(url_for('profile_page'))
+
+        hashed_password = generate_password_hash(new_password, method="pbkdf2:sha256")
+        cursor.execute("UPDATE Users SET password = %s WHERE user_id = %s", (hashed_password, session['user_id']))
+        connection.commit()
+
+        flash("Password changed successfully!", "success")
+        return redirect(url_for('profile_page'))
+    except Error as e:
+        flash(f"An error occurred: {e}", "danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
 
 def delete_account():
     # Ensure the user is logged in

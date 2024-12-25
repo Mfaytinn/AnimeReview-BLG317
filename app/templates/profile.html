@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block title %}
+My Profile - Anime App
+{% endblock %}
+
+{% block header %}
+My Profile
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            <div class="alert alert-{{ messages[0][0] }}" role="alert">
+                {{ messages[0][1] }}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Profile Information -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">User Information</h5>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Gender:</strong> {{ user.gender }}</p>
+            <p><strong>Birthday:</strong> {{ user.birthday }}</p>
+            <p><strong>Place:</strong> {{ user.place }}</p>
+            <p><strong>Joined:</strong> {{ user.joined }}</p>
+        </div>
+    </div>
+
+    <!-- Update Profile -->
+    <h2 class="mb-3">Update Profile</h2>
+    <form action="{{ url_for('update_profile') }}" method="POST">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="gender" class="form-label">Gender</label>
+            <select class="form-select" id="gender" name="gender">
+                <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                <option value="Non-Binary" {% if user.gender == 'Non-Binary' %}selected{% endif %}>Non-Binary</option>
+                <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="birthday" class="form-label">Birthday</label>
+            <input type="date" class="form-control" id="birthday" name="birthday" value="{{ user.birthday }}">
+        </div>
+        <div class="mb-3">
+            <label for="place" class="form-label">Place</label>
+            <input type="text" class="form-control" id="place" name="place" value="{{ user.place }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+
+    <!-- Change Password -->
+    <h2 class="mt-4">Change Password</h2>
+    <form action="{{ url_for('change_password') }}" method="POST">
+        <div class="mb-3">
+            <label for="current_password" class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="current_password" name="current_password" required>
+        </div>
+        <div class="mb-3">
+            <label for="new_password" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="new_password" name="new_password" required>
+        </div>
+        <div class="mb-3">
+            <label for="confirm_password" class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Change Password</button>
+    </form>
+    
+    <!-- Delete Account -->
+    <h2 class="mt-4 text-danger">Danger Zone</h2>
+    <p class="text-danger">Deleting your account is irreversible!</p>
+    <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+        <button type="submit" class="btn btn-danger">Delete My Account</button>
+    </form>
+</div>
+{% endblock %}

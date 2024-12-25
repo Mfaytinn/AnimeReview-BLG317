@@ -21,7 +21,7 @@ def create_app():
     
     app.add_url_rule("/profile/update", view_func=views.update_profile, methods=["POST"], endpoint="update_profile")
     app.add_url_rule("/profile/delete", view_func=views.delete_account, methods=["POST"], endpoint="delete_account")
-
+    app.add_url_rule("/change_password", view_func=views.change_password, methods=["POST"], endpoint="change_password")
 
     return app
 
