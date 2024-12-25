@@ -91,10 +91,13 @@ ALTER TABLE Anime_Scores
 MODIFY COLUMN score_id INT AUTO_INCREMENT;
 
 
--- Table 8: Anime Genres
--- CREATE TABLE Anime_Genres (
---     genre_id INT PRIMARY KEY AUTO_INCREMENT,
---     anime_id INT,
---     genres VARCHAR(255),
---     FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id)
--- );
+-- Merging the Users and Accounts table
+ALTER TABLE Users MODIFY COLUMN user_id INT AUTO_INCREMENT;
+
+ALTER TABLE Users
+ADD COLUMN password VARCHAR(255) NOT NULL;
+
+ALTER TABLE Users
+ADD COLUMN role ENUM('user', 'admin') DEFAULT 'user';
+
+DROP TABLE Accounts;

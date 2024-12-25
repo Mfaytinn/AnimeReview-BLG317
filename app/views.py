@@ -332,11 +332,12 @@ def signin_page():
 
         try:
             cursor = connection.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM Accounts WHERE username = %s", (username,))
+            cursor.execute("SELECT * FROM Users WHERE username = %s", (username,))
             user = cursor.fetchone()
 
             if user and check_password_hash(user['password'], password):
                 session['user_id'] = user['user_id']
+                session["logged_in"] = True
                 flash("Signin successful!", "success")
                 return redirect(url_for("index_page"))
             else:
@@ -367,7 +368,7 @@ def signup_page():
 
         try:
             cursor = connection.cursor()
-            cursor.execute("INSERT INTO Accounts (username, password) VALUES (%s, %s)", (username, hashed_password))
+            cursor.execute("INSERT INTO Users (username, password) VALUES (%s, %s)", (username, hashed_password))
             connection.commit()
             flash("Signup successful! Please signin.", "success")
             return redirect(url_for("signin_page"))
@@ -379,3 +380,39 @@ def signup_page():
                 connection.close()
 
     return render_template("signup.html")
+
+def profile_page():
+    if 'user_id' not in session:
+        flash("You need to log in to view your profile.", "warning")
+        return redirect(url_for("signin_page"))
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Database connection failed!", "danger")
+        return redirect(url_for("index_page"))
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM Users WHERE user_id = %s", (session['user_id'],))
+        user = cursor.fetchone()
+
+        if user:
+            return render_template("profile.html", user=user)
+        else:
+            flash("User not found.", "danger")
+            return redirect(url_for("index_page"))
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
+def logout():
+    # Clear all session data
+    session.clear()
+    # Provide feedback to the user
+    flash("You have been logged out.", "info")
+    # Redirect to the home or sign-in page
+    return redirect(url_for('signin_page'))
+
+

@@ -16,7 +16,8 @@ def create_app():
     app.add_url_rule("/signin", view_func=views.signin_page, methods=["GET", "POST"], endpoint="signin_page")
     app.add_url_rule("/signup", view_func=views.signup_page, methods=["GET", "POST"], endpoint="signup_page")
     app.add_url_rule("/anime/<int:anime_id>/add_review", view_func=views.add_review, methods=["POST"], endpoint="add_review")
-    
+    app.add_url_rule("/profile", view_func=views.profile_page, endpoint="profile_page")
+    app.add_url_rule("/logout", view_func=views.logout, endpoint="logout")
     return app
 
 if __name__ == "__main__":
