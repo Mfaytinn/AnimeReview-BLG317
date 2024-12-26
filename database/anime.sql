@@ -87,22 +87,42 @@ CREATE TABLE Review_Interactions (
     user_id INT NOT NULL,
     score_id INT NOT NULL,
     action ENUM('like', 'dislike') NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (score_id) REFERENCES Anime_Scores(score_id) ON DELETE CASCADE,
     UNIQUE(user_id, score_id)
 );
 
-ALTER TABLE Review_Interactions
-DROP FOREIGN KEY Review_Interactions_ibfk_2;
+CREATE TABLE Watchlist (
+    watchlist_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    anime_id INT NOT NULL,
+    status ENUM('watching', 'completed', 'on-hold', 'dropped', 'plan-to-watch') DEFAULT 'plan-to-watch',
+    added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id) ON DELETE CASCADE,
+    UNIQUE(user_id, anime_id)
+);
 
-ALTER TABLE Review_Interactions
-ADD CONSTRAINT Review_Interactions_ibfk_2
-FOREIGN KEY (score_id)
-REFERENCES Anime_Scores(score_id)
-ON DELETE CASCADE;
+-- If table created without CASCADE, you can add it later
+------------------------------------------------------------
+-- ALTER TABLE Review_Interactions
+-- DROP FOREIGN KEY Review_Interactions_ibfk_1;
 
+-- ALTER TABLE Review_Interactions
+-- ADD CONSTRAINT Review_Interactions_ibfk_1
+-- FOREIGN KEY (user_id)
+-- REFERENCES Users(user_id)
+-- ON DELETE CASCADE;
 
+-- ALTER TABLE Review_Interactions
+-- DROP FOREIGN KEY Review_Interactions_ibfk_2;
 
+-- ALTER TABLE Review_Interactions
+-- ADD CONSTRAINT Review_Interactions_ibfk_2
+-- FOREIGN KEY (score_id)
+-- REFERENCES Anime_Scores(score_id)
+-- ON DELETE CASCADE;
+--------------------------------------------------------------
 
 
 -- ALTER TABLE Producers MODIFY producer_name VARCHAR(255) NULL;
