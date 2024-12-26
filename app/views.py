@@ -148,15 +148,20 @@ def studio_animes_page(studio_id):
 
     return render_template('studio_animes.html', animes=animes)
 
-
 def anime_page(anime_id):
+    user_id = session.get('user_id', None)  # Get the logged-in user's ID, if any
+
     connection = get_db_connection()
     if connection is None:
         flash("Couldn't connect to the database!", category="danger")
-        return render_template('anime_page.html', anime_info={}, anime_metadata={}, reviews=[], anime_id=anime_id)
+        return render_template(
+            'anime_page.html', anime_info={}, anime_metadata={}, reviews=[], anime_id=anime_id, user_id=user_id
+        )
 
     try:
         cursor = connection.cursor(dictionary=True)
+
+        # Fetch anime information and metadata
         cursor.execute("""
             SELECT ai.anime_name, ai.english_name, ai.other_name, ai.synopsis, ai.type_anime, ai.genres,
                    am.episodes, am.aired, am.premiered, am.source
@@ -185,13 +190,18 @@ def anime_page(anime_id):
             flash("Anime not found!", category="danger")
             return redirect(url_for('home'))
 
+        # Fetch all reviews with likes, dislikes, and user's interaction status
         cursor.execute("""
-            SELECT u.username, scores.score, scores.comment
+            SELECT scores.score_id, u.username, scores.score, scores.comment, scores.likes, scores.dislikes,
+                   CASE WHEN scores.user_id = %s THEN 1 ELSE 0 END AS is_user_review,
+                   (SELECT action FROM Review_Interactions
+                    WHERE user_id = %s AND score_id = scores.score_id) AS user_action
             FROM Anime_Scores AS scores
             LEFT JOIN Users u ON scores.user_id = u.user_id
             WHERE scores.anime_id = %s
-            LIMIT 5
-        """, (anime_id,))
+            ORDER BY is_user_review DESC, scores.score_id DESC
+            LIMIT 20
+        """, (user_id, user_id, anime_id))
         reviews = cursor.fetchall()
 
     except Error as e:
@@ -209,20 +219,24 @@ def anime_page(anime_id):
         anime_info=anime_info,
         anime_metadata=anime_metadata,
         reviews=reviews,
-        anime_id=anime_id 
+        user_id=user_id,
+        anime_id=anime_id
     )
 
-
-
 def add_review(anime_id):
+    # Ensure the user is logged in
+    if 'user_id' not in session:
+        flash("You must be signed in to submit a review.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    # Get review data from the form
     score = request.form.get('score')
     comment = request.form.get('comment')
 
-    # Get the user_id from the session for now it is hardcoded
-    user_id = 99999  
-    print("debug: user_id =", user_id)
-    print("debug: anime_id =", anime_id)
+    # Get the user_id from the session
+    user_id = session.get('user_id')
 
+    # Validate form data
     if not score or not comment:
         flash("Score and comment are required!", category="danger")
         return redirect(url_for('anime_page', anime_id=anime_id))
@@ -242,6 +256,225 @@ def add_review(anime_id):
         flash("Your review has been submitted!", category="success")
     except Error as e:
         flash(f"Failed to submit review: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('anime_page', anime_id=anime_id))
+
+def delete_review(score_id):
+    user_id = session.get('user_id', None)
+    if not user_id:
+        flash("You must be signed in to delete a review.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('anime_page', anime_id=request.form.get('anime_id')))
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+
+        # Check if the review belongs to the logged-in user
+        cursor.execute("""
+            SELECT user_id FROM Anime_Scores
+            WHERE score_id = %s
+        """, (score_id,))
+        review = cursor.fetchone()
+
+        if not review or review['user_id'] != user_id:
+            flash("You are not authorized to delete this review.", category="danger")
+            return redirect(url_for('anime_page', anime_id=request.form.get('anime_id')))
+
+        # Delete the review
+        cursor.execute("""
+            DELETE FROM Anime_Scores
+            WHERE score_id = %s AND user_id = %s
+        """, (score_id, user_id))
+        connection.commit()
+
+        flash("Review deleted successfully!", category="success")
+    except Error as e:
+        flash(f"Failed to delete review: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('anime_page', anime_id=request.form.get('anime_id')))
+
+def edit_review(score_id):
+    user_id = session.get('user_id', None)
+    if not user_id:
+        flash("You must be signed in to edit your review.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('anime_page', anime_id=request.form.get('anime_id')))
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+
+        if request.method == 'POST':
+            # Update the review in the database
+            new_score = request.form.get('score')
+            new_comment = request.form.get('comment')
+            anime_id = request.form.get('anime_id')
+
+            if not new_score or not new_comment:
+                flash("Both score and comment are required.", category="danger")
+                return redirect(url_for('anime_page', anime_id=anime_id))
+
+            cursor.execute("""
+                UPDATE Anime_Scores
+                SET score = %s, comment = %s
+                WHERE score_id = %s AND user_id = %s
+            """, (new_score, new_comment, score_id, user_id))
+            connection.commit()
+
+            flash("Review updated successfully!", category="success")
+            return redirect(url_for('anime_page', anime_id=anime_id))
+        else:
+            # Fetch the review to edit
+            cursor.execute("""
+                SELECT scores.score_id, scores.score, scores.comment, scores.anime_id
+                FROM Anime_Scores AS scores
+                WHERE scores.score_id = %s AND scores.user_id = %s
+            """, (score_id, user_id))
+            review = cursor.fetchone()
+
+            if not review:
+                flash("Review not found or you do not have permission to edit it.", category="danger")
+                return redirect(url_for('anime_page', anime_id=request.args.get('anime_id')))
+
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template('edit_review.html', review=review)
+
+def like_review(score_id):
+    user_id = session.get('user_id', None)
+    if not user_id:
+        flash("You must be signed in to like a review.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('anime_page', anime_id=request.form.get('anime_id')))
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        anime_id = request.form.get('anime_id')
+
+        # Check if the user has already interacted with this review
+        cursor.execute("""
+            SELECT action FROM Review_Interactions
+            WHERE user_id = %s AND score_id = %s
+        """, (user_id, score_id))
+        interaction = cursor.fetchone()
+
+        if interaction:
+            if interaction['action'] == 'like':
+                flash("You have already liked this review.", category="info")
+            else:
+                # Update interaction from dislike to like
+                cursor.execute("""
+                    UPDATE Review_Interactions
+                    SET action = 'like'
+                    WHERE user_id = %s AND score_id = %s
+                """, (user_id, score_id))
+                cursor.execute("""
+                    UPDATE Anime_Scores
+                    SET likes = likes + 1, dislikes = dislikes - 1
+                    WHERE score_id = %s
+                """, (score_id,))
+                connection.commit()
+                flash("Your reaction has been updated to like.", category="success")
+        else:
+            # Insert a new like interaction
+            cursor.execute("""
+                INSERT INTO Review_Interactions (user_id, score_id, action)
+                VALUES (%s, %s, 'like')
+            """, (user_id, score_id))
+            cursor.execute("""
+                UPDATE Anime_Scores
+                SET likes = likes + 1
+                WHERE score_id = %s
+            """, (score_id,))
+            connection.commit()
+            flash("You liked the review!", category="success")
+
+    except Error as e:
+        flash(f"Failed to like the review: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('anime_page', anime_id=anime_id))
+
+def dislike_review(score_id):
+    user_id = session.get('user_id', None)
+    if not user_id:
+        flash("You must be signed in to dislike a review.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('anime_page', anime_id=request.form.get('anime_id')))
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        anime_id = request.form.get('anime_id')
+
+        # Check if the user has already interacted with this review
+        cursor.execute("""
+            SELECT action FROM Review_Interactions
+            WHERE user_id = %s AND score_id = %s
+        """, (user_id, score_id))
+        interaction = cursor.fetchone()
+
+        if interaction:
+            if interaction['action'] == 'dislike':
+                flash("You have already disliked this review.", category="info")
+            else:
+                # Update interaction from like to dislike
+                cursor.execute("""
+                    UPDATE Review_Interactions
+                    SET action = 'dislike'
+                    WHERE user_id = %s AND score_id = %s
+                """, (user_id, score_id))
+                cursor.execute("""
+                    UPDATE Anime_Scores
+                    SET dislikes = dislikes + 1, likes = likes - 1
+                    WHERE score_id = %s
+                """, (score_id,))
+                connection.commit()
+                flash("Your reaction has been updated to dislike.", category="success")
+        else:
+            # Insert a new dislike interaction
+            cursor.execute("""
+                INSERT INTO Review_Interactions (user_id, score_id, action)
+                VALUES (%s, %s, 'dislike')
+            """, (user_id, score_id))
+            cursor.execute("""
+                UPDATE Anime_Scores
+                SET dislikes = dislikes + 1
+                WHERE score_id = %s
+            """, (score_id,))
+            connection.commit()
+            flash("You disliked the review!", category="success")
+
+    except Error as e:
+        flash(f"Failed to dislike the review: {e}", category="danger")
     finally:
         if connection.is_connected():
             cursor.close()
