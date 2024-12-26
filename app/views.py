@@ -204,6 +204,13 @@ def anime_page(anime_id):
         """, (user_id, user_id, anime_id))
         reviews = cursor.fetchall()
 
+        cursor.execute("""
+            SELECT status FROM Watchlist
+            WHERE user_id = %s AND anime_id = %s
+        """, (user_id, anime_id))
+        watchlist_status = cursor.fetchone()
+        watchlist_status = watchlist_status['status'] if watchlist_status else None
+
     except Error as e:
         flash(f"Database error: {e}", category="danger")
         anime_info = {}
@@ -220,8 +227,10 @@ def anime_page(anime_id):
         anime_metadata=anime_metadata,
         reviews=reviews,
         user_id=user_id,
+        watchlist_status=watchlist_status,
         anime_id=anime_id
     )
+
 
 def add_review(anime_id):
     # Ensure the user is logged in
@@ -772,4 +781,157 @@ def logout():
     # Redirect to the home or sign-in page
     return redirect(url_for('signin_page'))
 
+
+def add_to_watchlist(anime_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("You must be signed in to add an anime to your watchlist.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    status = request.form.get('status', 'plan-to-watch')  # Default to "plan-to-watch"
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('anime_page', anime_id=anime_id))
+
+    try:
+        cursor = connection.cursor()
+
+        # Check if the anime is already in the user's watchlist
+        cursor.execute("""
+            SELECT * FROM Watchlist
+            WHERE user_id = %s AND anime_id = %s
+        """, (user_id, anime_id))
+        existing_entry = cursor.fetchone()
+
+        if existing_entry:
+            flash("This anime is already in your watchlist.", category="info")
+        else:
+            # Add anime to watchlist
+            cursor.execute("""
+                INSERT INTO Watchlist (user_id, anime_id, status)
+                VALUES (%s, %s, %s)
+            """, (user_id, anime_id, status))
+            connection.commit()
+            flash("Anime added to your watchlist!", category="success")
+    except Error as e:
+        flash(f"Error adding anime to watchlist: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('anime_page', anime_id=anime_id))
+
+def my_list():
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("You must be signed in to view your watchlist.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    search_query = request.form.get('search', '').strip()  # Get the search query
+    filter_status = request.form.get('filter_status', '')  # Get the filter status
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('home'))
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+
+        # Fetch filtered and/or searched watchlist
+        query = """
+            SELECT wl.status, wl.added_date, ai.anime_id, ai.anime_name, ai.english_name, ai.genres, ai.type_anime
+            FROM Watchlist wl
+            JOIN Anime_Information ai ON wl.anime_id = ai.anime_id
+            WHERE wl.user_id = %s
+        """
+        params = [user_id]
+
+        if filter_status:
+            query += " AND wl.status = %s"
+            params.append(filter_status)
+
+        if search_query:
+            query += " AND (ai.anime_name LIKE %s OR ai.english_name LIKE %s)"
+            params.extend([f'%{search_query}%', f'%{search_query}%'])
+
+        query += " ORDER BY wl.added_date DESC"
+
+        cursor.execute(query, tuple(params))
+        watchlist = cursor.fetchall()
+    except Error as e:
+        flash(f"Failed to fetch watchlist: {e}", category="danger")
+        watchlist = []
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template('my_list.html', watchlist=watchlist, search_query=search_query, filter_status=filter_status)
+
+def remove_from_watchlist(anime_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("You must be signed in to manage your watchlist.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('my_list'))
+
+    try:
+        cursor = connection.cursor()
+        # Remove the anime from the user's watchlist
+        cursor.execute("""
+            DELETE FROM Watchlist
+            WHERE user_id = %s AND anime_id = %s
+        """, (user_id, anime_id))
+        connection.commit()
+        flash("Anime removed from your watchlist!", category="success")
+    except Error as e:
+        flash(f"Error removing anime from watchlist: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('my_list'))
+
+def update_watchlist_status(anime_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("You must be signed in to manage your watchlist.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    new_status = request.form.get('status')
+    if not new_status:
+        flash("Invalid status selected.", category="danger")
+        return redirect(url_for('my_list'))
+
+    connection = get_db_connection()
+    if connection is None:
+        flash("Couldn't connect to the database!", category="danger")
+        return redirect(url_for('my_list'))
+
+    try:
+        cursor = connection.cursor()
+        # Update the status of the anime in the user's watchlist
+        cursor.execute("""
+            UPDATE Watchlist
+            SET status = %s
+            WHERE user_id = %s AND anime_id = %s
+        """, (new_status, user_id, anime_id))
+        connection.commit()
+        flash("Watchlist status updated successfully!", category="success")
+    except Error as e:
+        flash(f"Error updating watchlist status: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('my_list'))
 

@@ -26,6 +26,41 @@
         </ul>
     </div>
 
+    <div class="add-to-watchlist mb-4">
+        <h3 class="text-primary">Add to Watchlist</h3>
+        {% if session.get('user_id') %}
+            <form action="{{ url_for('add_to_watchlist', anime_id=anime_id) }}" method="POST">
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="plan-to-watch" selected>Plan to Watch</option>
+                        <option value="watching">Watching</option>
+                        <option value="completed">Completed</option>
+                        <option value="on-hold">On Hold</option>
+                        <option value="dropped">Dropped</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add to Watchlist
+                </button>
+            </form>
+        {% else %}
+            <p>You must <a href="{{ url_for('signin_page') }}">sign in</a> to manage your watchlist.</p>
+        {% endif %}
+    </div>
+    
+    <div class="watchlist-status mb-4">
+        {% if watchlist_status %}
+            <p class="text-success">
+                <i class="bi bi-check-circle"></i> This anime is in your watchlist with status:
+                <strong>{{ watchlist_status }}</strong>
+            </p>
+        {% else %}
+            <p class="text-muted">This anime is not in your watchlist.</p>
+        {% endif %}
+    </div>
+    
+    
     <div class="reviews mb-4">
         <h3 class="text-success">Reviews</h3>
         {% if reviews %}

@@ -1,0 +1,86 @@
+{% extends 'layout.html' %}
+
+{% block title %}My Watchlist{% endblock %}
+
+{% block header %}
+    <h1 class="text-center">My Watchlist</h1>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Search and Filter Form -->
+    <form action="{{ url_for('my_list') }}" method="POST" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search your watchlist..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-4">
+                <select name="filter_status" class="form-select">
+                    <option value="" {% if not filter_status %}selected{% endif %}>All</option>
+                    <option value="plan-to-watch" {% if filter_status == 'plan-to-watch' %}selected{% endif %}>Plan to Watch</option>
+                    <option value="watching" {% if filter_status == 'watching' %}selected{% endif %}>Watching</option>
+                    <option value="completed" {% if filter_status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="on-hold" {% if filter_status == 'on-hold' %}selected{% endif %}>On Hold</option>
+                    <option value="dropped" {% if filter_status == 'dropped' %}selected{% endif %}>Dropped</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-filter"></i> Apply
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Watchlist Table -->
+    <div class="watchlist mb-5">
+        {% if watchlist %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Anime Name</th>
+                        <th>English Name</th>
+                        <th>Genres</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Date Added</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for anime in watchlist %}
+                        <tr>
+                            <td><a href="{{ url_for('anime_page', anime_id=anime['anime_id']) }}">{{ anime['anime_name'] }}</a></td>
+                            <td>{{ anime['english_name'] }}</td>
+                            <td>{{ anime['genres'] }}</td>
+                            <td>{{ anime['type_anime'] }}</td>
+                            <td>
+                                <form action="{{ url_for('update_watchlist_status', anime_id=anime['anime_id']) }}" method="POST" class="d-inline">
+                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="plan-to-watch" {% if anime['status'] == 'plan-to-watch' %}selected{% endif %}>Plan to Watch</option>
+                                        <option value="watching" {% if anime['status'] == 'watching' %}selected{% endif %}>Watching</option>
+                                        <option value="completed" {% if anime['status'] == 'completed' %}selected{% endif %}>Completed</option>
+                                        <option value="on-hold" {% if anime['status'] == 'on-hold' %}selected{% endif %}>On Hold</option>
+                                        <option value="dropped" {% if anime['status'] == 'dropped' %}selected{% endif %}>Dropped</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td>{{ anime['added_date'] }}</td>
+                            <td>
+                                <!-- Option to remove anime from watchlist -->
+                                <form action="{{ url_for('remove_from_watchlist', anime_id=anime['anime_id']) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-x-circle"></i> Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-muted">No results found for your search or filter criteria.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

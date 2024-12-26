@@ -21,13 +21,17 @@ def create_app():
     app.add_url_rule("/profile", view_func=views.profile_page, endpoint="profile_page")
     app.add_url_rule("/profile/update", view_func=views.update_profile, methods=["POST"], endpoint="update_profile")
     app.add_url_rule("/profile/delete", view_func=views.delete_account, methods=["POST"], endpoint="delete_account")
-    app.add_url_rule("/change_password", view_func=views.change_password, methods=["POST"], endpoint="change_password")
+    app.add_url_rule("/profile/change_password", view_func=views.change_password, methods=["POST"], endpoint="change_password")
 
-    # app.add_url_rule("/anime/<int:anime_id>/add_to_watchlist", view_func=views.add_to_watchlist, methods=["POST"], endpoint="add_to_watchlist")
     app.add_url_rule("/edit_review/<int:score_id>", view_func=views.edit_review, methods=["GET", "POST"], endpoint="edit_review")
     app.add_url_rule("/dislike_review/<int:score_id>", view_func=views.dislike_review, methods=["POST"], endpoint="dislike_review")
     app.add_url_rule("/like_review/<int:score_id>", view_func=views.like_review, methods=["POST"], endpoint="like_review")
     app.add_url_rule("/delete_review/<int:score_id>", view_func=views.delete_review, methods=["POST"], endpoint="delete_review")
+    
+    app.add_url_rule("/anime/<int:anime_id>/add_to_watchlist", view_func=views.add_to_watchlist, methods=["POST"], endpoint="add_to_watchlist")
+    app.add_url_rule("/my_list", view_func=views.my_list, methods=["GET","POST"], endpoint="my_list")
+    app.add_url_rule("/my_list/remove/<int:anime_id>", view_func=views.remove_from_watchlist, methods=["POST"], endpoint="remove_from_watchlist")
+    app.add_url_rule("/my_list/update_status/<int:anime_id>", view_func=views.update_watchlist_status, methods=["POST"], endpoint="update_watchlist_status")
     return app
 
 if __name__ == "__main__":
