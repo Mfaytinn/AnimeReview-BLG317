@@ -75,16 +75,38 @@ CREATE TABLE Anime_Metadata (
     FOREIGN KEY (anime_id) REFERENCES Anime_Information(anime_id)
 );
 
---- Table 8: Accounts
-CREATE TABLE Accounts (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL
+-- --- Table 8: Accounts
+-- CREATE TABLE Accounts (
+--     user_id INT AUTO_INCREMENT PRIMARY KEY,
+--     username VARCHAR(255) NOT NULL UNIQUE,
+--     password VARCHAR(255) NOT NULL
+-- );
+
+CREATE TABLE Review_Interactions (
+    interaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    score_id INT NOT NULL,
+    action ENUM('like', 'dislike') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (score_id) REFERENCES Anime_Scores(score_id) ON DELETE CASCADE,
+    UNIQUE(user_id, score_id)
 );
 
+ALTER TABLE Review_Interactions
+DROP FOREIGN KEY Review_Interactions_ibfk_2;
 
-ALTER TABLE Producers MODIFY producer_name VARCHAR(255) NULL;
-ALTER TABLE Licensors MODIFY licensor_name VARCHAR(255) NULL;
+ALTER TABLE Review_Interactions
+ADD CONSTRAINT Review_Interactions_ibfk_2
+FOREIGN KEY (score_id)
+REFERENCES Anime_Scores(score_id)
+ON DELETE CASCADE;
+
+
+
+
+
+-- ALTER TABLE Producers MODIFY producer_name VARCHAR(255) NULL;
+-- ALTER TABLE Licensors MODIFY licensor_name VARCHAR(255) NULL;
 
 -- after creating the tables, we can convert to auto increment
 ALTER TABLE Anime_Scores
@@ -104,3 +126,9 @@ ALTER TABLE Users
 ADD CONSTRAINT unique_username UNIQUE (username);
 
 DROP TABLE Accounts;
+
+-- Adding likes and dislikes to Anime_Scores
+ALTER TABLE Anime_Scores
+ADD COLUMN likes INT DEFAULT 0,
+ADD COLUMN dislikes INT DEFAULT 0;
+
