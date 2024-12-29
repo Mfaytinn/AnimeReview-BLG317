@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container text-center mt-5">
+    <h1>Admin Dashboard</h1>
+    <div class="mt-4 d-flex justify-content-center gap-3">
+        <a href="{{ url_for('admin_manage_animes') }}" class="btn btn-primary btn-lg">Manage Animes</a>
+        <a href="{{ url_for('admin_manage_users') }}" class="btn btn-secondary btn-lg">Manage Users</a>
+    </div>
+</div>
+{% endblock %}

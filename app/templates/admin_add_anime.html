@@ -1,0 +1,109 @@
+{% extends 'layout.html' %}
+{% block title %}Add Anime{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Add New Anime</h1>
+    <form method="POST">
+        <!-- Anime Information -->
+        <div class="mb-3">
+            <label for="anime_name" class="form-label">Anime Name</label>
+            <input type="text" class="form-control" id="anime_name" name="anime_name" required>
+        </div>
+        <div class="mb-3">
+            <label for="english_name" class="form-label">English Name</label>
+            <input type="text" class="form-control" id="english_name" name="english_name">
+        </div>
+        <div class="mb-3">
+            <label for="genres" class="form-label">Genres</label>
+            <input type="text" class="form-control" id="genres" name="genres">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Type</label>
+            <div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="type_movie" name="type_anime" value="Movie" required>
+                    <label class="form-check-label" for="type_movie">Movie</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="type_ova" name="type_anime" value="OVA">
+                    <label class="form-check-label" for="type_ova">OVA</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="type_special" name="type_anime" value="Special">
+                    <label class="form-check-label" for="type_special">Special</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="type_ona" name="type_anime" value="ONA">
+                    <label class="form-check-label" for="type_ona">ONA</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="type_music" name="type_anime" value="Music">
+                    <label class="form-check-label" for="type_music">Music</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="type_unknown" name="type_anime" value="Unknown">
+                    <label class="form-check-label" for="type_unknown">Unknown</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Anime Metadata -->
+        <h2>Metadata</h2>
+        <div class="mb-3">
+            <label for="episodes" class="form-label">Episodes</label>
+            <input type="number" class="form-control" id="episodes" name="episodes" min="1">
+        </div>
+        <div class="mb-3">
+            <label for="aired" class="form-label">Aired</label>
+            <div class="input-group">
+                <input type="date" class="form-control" id="aired_start" name="aired_start" placeholder="Start Date">
+                <span class="input-group-text">to</span>
+                <input type="date" class="form-control" id="aired_end" name="aired_end" placeholder="End Date">
+            </div>
+        </div>        
+        <div class="mb-3">
+            <label for="premiered" class="form-label">Premiered</label>
+            <input type="text" class="form-control" id="premiered" name="premiered" placeholder="e.g., Winter 2024">
+        </div>
+        <div class="mb-3">
+            <label for="source" class="form-label">Source</label>
+            <select class="form-control" id="source" name="source">
+                <option value="Original">Original</option>
+                <option value="Manga">Manga</option>
+                <option value="Light novel">Light novel</option>
+                <option value="Game">Game</option>
+                <option value="Visual novel">Visual novel</option>
+                <option value="4-koma manga">4-koma manga</option>
+                <option value="Novel">Novel</option>
+                <option value="Unknown">Unknown</option>
+                <option value="Other">Other</option>
+                <option value="Picture book">Picture book</option>
+                <option value="Web manga">Web manga</option>
+                <option value="Music">Music</option>
+                <option value="Radio">Radio</option>
+                <option value="Book">Book</option>
+                <option value="Card game">Card game</option>
+                <option value="Digital manga">Digital manga</option>
+            </select>
+        </div>
+        
+
+        <!-- Anime Production -->
+        <h2>Production</h2>
+        <div class="mb-3">
+            <label for="producer" class="form-label">Producer</label>
+            <input type="text" class="form-control" id="producer" name="producer" placeholder="Producer Name">
+        </div>
+        <div class="mb-3">
+            <label for="studio" class="form-label">Studio</label>
+            <input type="text" class="form-control" id="studio" name="studio" placeholder="Studio Name">
+        </div>
+        <div class="mb-3">
+            <label for="licensor" class="form-label">Licensor</label>
+            <input type="text" class="form-control" id="licensor" name="licensor" placeholder="Licensor Name">
+        </div>
+
+        <button type="submit" class="btn btn-success">Add Anime</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+{% block title %}Update Anime{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Update Anime</h1>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="anime_name" class="form-label">Anime Name</label>
+            <input type="text" class="form-control" id="anime_name" name="anime_name" value="{{ anime.anime_name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="english_name" class="form-label">English Name</label>
+            <input type="text" class="form-control" id="english_name" name="english_name" value="{{ anime.english_name }}">
+        </div>
+        <div class="mb-3">
+            <label for="genres" class="form-label">Genres</label>
+            <input type="text" class="form-control" id="genres" name="genres" value="{{ anime.genres }}">
+        </div>
+        <div class="mb-3">
+            <label for="type_anime" class="form-label">Type</label>
+            <input type="text" class="form-control" id="type_anime" name="type_anime" value="{{ anime.type_anime }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Update Anime</button>
+    </form>
+</div>
+{% endblock %}

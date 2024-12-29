@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Admin Panel - Manage Users
+{% endblock %}
+
+{% block header %}
+Admin Panel - User Management
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Manage Users</h2>
+
+    <!-- Search Form -->
+    <form class="d-flex mb-3" method="GET" action="{{ url_for('admin_manage_users') }}">
+        <input class="form-control me-2" type="search" name="search" placeholder="Search users by username or ID" value="{{ search_query }}">
+        <button class="btn btn-outline-primary" type="submit">Search</button>
+    </form>
+
+    <!-- User Table -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.user_id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role }}</td>
+                <td>{{ user.status }}</td>
+                <td>
+                    <!-- Update User Role -->
+                    <form method="POST" action="{{ url_for('admin_update_user_role', user_id=user.user_id) }}" class="d-inline">
+                        <input type="hidden" name="role" value="admin">
+                        <button class="btn btn-info btn-sm" type="submit">Make Admin</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin_update_user_role', user_id=user.user_id) }}" class="d-inline">
+                        <input type="hidden" name="role" value="user">
+                        <button class="btn btn-secondary btn-sm" type="submit">Make User</button>
+                    </form>
+
+                    <!-- Delete User -->
+                    <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.user_id) }}" class="d-inline">
+                        <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination Controls -->
+    <nav aria-label="User pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <!-- Previous Button -->
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin_manage_users', page=current_page-1, search=search_query) }}">Previous</a>
+            </li>
+            {% endif %}
+    
+            <!-- Page Numbers -->
+            {% for page in range(start_page, end_page + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('admin_manage_users', page=page, search=search_query) }}">{{ page }}</a>
+            </li>
+            {% endfor %}
+    
+            <!-- Next Button -->
+            {% if current_page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin_manage_users', page=current_page+1, search=search_query) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>    
+</div>
+{% endblock %}

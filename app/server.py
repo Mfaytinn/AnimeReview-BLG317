@@ -32,6 +32,71 @@ def create_app():
     app.add_url_rule("/my_list", view_func=views.my_list, methods=["GET","POST"], endpoint="my_list")
     app.add_url_rule("/my_list/remove/<int:anime_id>", view_func=views.remove_from_watchlist, methods=["POST"], endpoint="remove_from_watchlist")
     app.add_url_rule("/my_list/update_status/<int:anime_id>", view_func=views.update_watchlist_status, methods=["POST"], endpoint="update_watchlist_status")
+    
+    # Admin Dashboard Route
+    app.add_url_rule(
+        "/admin/dashboard",
+        view_func=views.admin_dashboard,
+        methods=["GET"],
+        endpoint="admin_dashboard"
+    )
+
+    # Add Anime Route
+    app.add_url_rule(
+        "/admin/anime/add",
+        view_func=views.admin_add_anime,
+        methods=["GET", "POST"],
+        endpoint="admin_add_anime"
+    )
+
+    # Update Anime Route
+    app.add_url_rule(
+        "/admin/anime/update/<int:anime_id>",
+        view_func=views.admin_update_anime,
+        methods=["GET", "POST"],
+        endpoint="admin_update_anime"
+    )
+
+    # Delete Anime Route
+    app.add_url_rule(
+        "/admin/anime/delete/<int:anime_id>",
+        view_func=views.admin_delete_anime,
+        methods=["POST"],
+        endpoint="admin_delete_anime"
+    )
+    # Manage Animes Route
+    app.add_url_rule(
+        "/admin/anime/manage",
+        view_func=views.admin_manage_animes,
+        methods=["GET"],
+        endpoint="admin_manage_animes"
+    )
+
+    app.add_url_rule(
+    "/admin/users/manage",
+    view_func=views.admin_manage_users,
+    methods=["GET", "POST"],
+    endpoint="admin_manage_users"
+    )
+
+    # Update User Role Route
+    app.add_url_rule(
+        "/admin/users/update_role/<int:user_id>",
+        view_func=views.admin_update_user_role,
+        methods=["POST"],
+        endpoint="admin_update_user_role"
+    )
+
+    app.add_url_rule(
+        "/admin/users/delete/<int:user_id>",
+        view_func=views.admin_delete_user,
+        methods=["POST"],
+        endpoint="admin_delete_user"
+    )
+
+
+
+
     return app
 
 if __name__ == "__main__":

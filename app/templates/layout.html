@@ -27,10 +27,11 @@
         <ul class="navbar-right">
             <li><a href="{{ url_for('top_100_page') }}">Top 100</a></li>
             <li><a href="{{ url_for('studios_page') }}">Studios</a></li>
-            <li><a href="{{ url_for('add_anime') }}">Add a New Anime</a></li>
-        
             {% if session.get('logged_in') %}
                 <li><a href="{{ url_for('profile_page') }}">My Profile</a></li>
+                {% if session.get('user_role') == 'admin' %}
+                    <li><a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning">Admin</a></li>
+                {% endif %}
                 <li><a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a></li>
             {% else %}
                 <li><a href="{{ url_for('signin_page') }}" class="btn btn-primary">Sign in</a></li>

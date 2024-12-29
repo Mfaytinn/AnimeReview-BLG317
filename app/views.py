@@ -580,6 +580,7 @@ def signin_page():
             if user and check_password_hash(user['password'], password):
                 session['user_id'] = user['user_id']
                 session["logged_in"] = True
+                session['user_role'] = user['role']  
                 flash("Signin successful!", "success")
                 return redirect(url_for("index_page"))
             else:
@@ -935,3 +936,378 @@ def update_watchlist_status(anime_id):
 
     return redirect(url_for('my_list'))
 
+def admin_dashboard():
+    return render_template('admin_dashboard.html')
+
+def admin_add_anime():
+    if request.method == "POST":
+        # Anime Information
+        anime_name = request.form.get("anime_name")
+        english_name = request.form.get("english_name")
+        genres = request.form.get("genres")
+        type_anime = request.form.get("type_anime")
+
+        # Metadata
+        episodes = request.form.get("episodes")
+        aired = request.form.get("aired")
+        premiered = request.form.get("premiered")
+        source = request.form.get("source")
+
+        # Production Data
+        studio_id = request.form.get("studio_id")
+        producer_id = request.form.get("producer_id")
+        licensor_id = request.form.get("licensor_id")
+
+        # Validation
+        if not anime_name:
+            flash("Anime name cannot be empty!", category="danger")
+            return redirect(url_for("admin_add_anime"))
+
+        connection = get_db_connection()
+        try:
+            cursor = connection.cursor()
+
+            # Insert into Anime_Information
+            cursor.execute("""
+                INSERT INTO Anime_Information (anime_name, english_name, genres, type_anime)
+                VALUES (%s, %s, %s, %s)
+            """, (anime_name, english_name, genres, type_anime))
+            anime_id = cursor.lastrowid  # Get the last inserted anime_id
+
+            # Insert into Anime_Metadata
+            cursor.execute("""
+                INSERT INTO Anime_Metadata (anime_id, episodes, aired, premiered, source)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (anime_id, episodes, aired, premiered, source))
+
+            # Insert into Anime_Production
+            cursor.execute("""
+                INSERT INTO Anime_Production (anime_id, producer_id, studio_id, licensor_id)
+                VALUES (%s, %s, %s, %s)
+            """, (anime_id, producer_id, studio_id, licensor_id))
+
+            connection.commit()
+            flash("Anime, metadata, and production data added successfully!", category="success")
+        except Error as e:
+            flash(f"Error adding anime: {e}", category="danger")
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
+
+        return redirect(url_for("admin_manage_animes"))
+
+    # Fetch available studios, producers, and licensors for the form
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute("SELECT studio_id, studio_name FROM Studios")
+        studios = cursor.fetchall()
+
+        cursor.execute("SELECT producer_id, producer_name FROM Producers")
+        producers = cursor.fetchall()
+
+        cursor.execute("SELECT licensor_id, licensor_name FROM licensors")
+        licensors = cursor.fetchall()
+    except Error as e:
+        flash(f"Error fetching production data: {e}", category="danger")
+        studios = []
+        producers = []
+        licensors = []
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template("admin_add_anime.html", studios=studios, producers=producers, licensors=licensors)
+
+
+def admin_update_anime(anime_id):
+    if request.method == "POST":
+        anime_name = request.form.get("anime_name")
+        english_name = request.form.get("english_name")
+        genres = request.form.get("genres")
+        type_anime = request.form.get("type_anime")
+
+        # Validation
+        if not anime_name:
+            flash("Anime name cannot be empty!", category="danger")
+            return redirect(url_for("admin_update_anime", anime_id=anime_id))
+
+        connection = get_db_connection()
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                UPDATE Anime_Information
+                SET anime_name = %s, english_name = %s, genres = %s, type_anime = %s
+                WHERE anime_id = %s
+            """, (anime_name, english_name, genres, type_anime, anime_id))
+            connection.commit()
+            flash("Anime updated successfully!", category="success")
+        except Error as e:
+            flash(f"Error updating anime: {e}", category="danger")
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
+
+        return redirect(url_for("admin_manage_animes"))
+
+    # Fetch the anime details for the update form
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM Anime_Information WHERE anime_id = %s", (anime_id,))
+        anime = cursor.fetchone()
+    except Error as e:
+        flash(f"Error fetching anime details: {e}", category="danger")
+        anime = None
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template("admin_update_anime.html", anime=anime)
+
+def admin_delete_anime(anime_id):
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM Anime_Information WHERE anime_id = %s", (anime_id,))
+        connection.commit()
+        flash("Anime deleted successfully!", category="success")
+    except Error as e:
+        flash(f"Error deleting anime: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for("admin_manage_animes"))
+
+def admin_manage_animes():
+    current_page = int(request.args.get("page", 1))
+    per_page = 10
+    offset = (current_page - 1) * per_page
+    search_query = request.args.get("search", "").strip()
+    max_visible_pages = 5  # Maximum number of pages to show in pagination
+
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor(dictionary=True)
+
+        # Search and paginate
+        if search_query:
+            cursor.execute("""
+                SELECT anime_id, anime_name, english_name, genres, type_anime
+                FROM Anime_Information
+                WHERE anime_name LIKE %s
+                LIMIT %s OFFSET %s
+            """, (f"%{search_query}%", per_page, offset))
+        else:
+            cursor.execute("""
+                SELECT anime_id, anime_name, english_name, genres, type_anime
+                FROM Anime_Information
+                LIMIT %s OFFSET %s
+            """, (per_page, offset))
+
+        animes = cursor.fetchall()
+
+        # Count total records
+        cursor.execute("SELECT COUNT(*) AS total FROM Anime_Information")
+        total_records = cursor.fetchone()["total"]
+        total_pages = (total_records + per_page - 1) // per_page
+
+        # Calculate visible page range
+        start_page = max(1, current_page - max_visible_pages // 2)
+        end_page = min(total_pages, start_page + max_visible_pages - 1)
+        if end_page - start_page + 1 < max_visible_pages:
+            start_page = max(1, end_page - max_visible_pages + 1)
+
+    except Error as e:
+        flash(f"Error fetching animes: {e}", category="danger")
+        animes = []
+        total_pages = 1
+        start_page = 1
+        end_page = 1
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template(
+        "admin_manage_animes.html",
+        animes=animes,
+        current_page=current_page,
+        total_pages=total_pages,
+        start_page=start_page,
+        end_page=end_page,
+        search_query=search_query
+    )
+
+
+def admin_manage_users():
+    # Ensure the admin is logged in
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("You must be signed in to access this page.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    # Verify admin privileges
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT role FROM Users WHERE user_id = %s", (user_id,))
+        user = cursor.fetchone()
+        if not user or user['role'] != 'admin':
+            flash("You are not authorized to access this page.", category="danger")
+            return redirect(url_for('index_page'))
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    # Fetch and search users
+    current_page = int(request.args.get('page', 1))
+    per_page = 10
+    offset = (current_page - 1) * per_page
+    search_query = request.args.get('search', '').strip()
+    max_visible_pages = 5  # Maximum number of page links to show
+
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor(dictionary=True)
+
+        # Search and paginate users
+        if search_query:
+            query = """
+                SELECT user_id, username, role, status
+                FROM Users
+                WHERE username LIKE %s
+                LIMIT %s OFFSET %s
+            """
+            cursor.execute(query, (f"%{search_query}%", per_page, offset))
+        else:
+            query = """
+                SELECT user_id, username, role, status
+                FROM Users
+                LIMIT %s OFFSET %s
+            """
+            cursor.execute(query, (per_page, offset))
+
+        users = cursor.fetchall()
+
+        # Count total records
+        cursor.execute("SELECT COUNT(*) AS total FROM Users")
+        total_records = cursor.fetchone()['total']
+        total_pages = (total_records + per_page - 1) // per_page
+
+        # Calculate visible page range
+        start_page = max(1, current_page - max_visible_pages // 2)
+        end_page = min(total_pages, start_page + max_visible_pages - 1)
+        if end_page - start_page + 1 < max_visible_pages:
+            start_page = max(1, end_page - max_visible_pages + 1)
+
+    except Error as e:
+        flash(f"Error fetching users: {e}", category="danger")
+        users = []
+        total_pages = 1
+        start_page = 1
+        end_page = 1
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return render_template(
+        'admin_manage_users.html',
+        users=users,
+        current_page=current_page,
+        total_pages=total_pages,
+        start_page=start_page,
+        end_page=end_page,
+        search_query=search_query
+    )
+
+
+
+def admin_update_user_role(user_id):
+    # Ensure the admin is logged in
+    admin_id = session.get('user_id')
+    if not admin_id:
+        flash("You must be signed in to access this page.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    # Verify admin privileges
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT role FROM Users WHERE user_id = %s", (admin_id,))
+        user = cursor.fetchone()
+        if not user or user['role'] != 'admin':
+            flash("You are not authorized to access this page.", category="danger")
+            return redirect(url_for('index_page'))
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    # Update user role
+    new_role = request.form.get('role')
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor()
+        cursor.execute("""
+            UPDATE Users
+            SET role = %s
+            WHERE user_id = %s
+        """, (new_role, user_id))
+        connection.commit()
+        flash("User role updated successfully!", category="success")
+    except Error as e:
+        flash(f"Error updating user role: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('admin_manage_users'))
+
+
+def admin_delete_user(user_id):
+    # Ensure the admin is logged in
+    admin_id = session.get('user_id')
+    if not admin_id:
+        flash("You must be signed in to access this page.", category="warning")
+        return redirect(url_for('signin_page'))
+
+    # Verify admin privileges
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT role FROM Users WHERE user_id = %s", (admin_id,))
+        user = cursor.fetchone()
+        if not user or user['role'] != 'admin':
+            flash("You are not authorized to access this page.", category="danger")
+            return redirect(url_for('index_page'))
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    # Delete user
+    connection = get_db_connection()
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM Users WHERE user_id = %s", (user_id,))
+        connection.commit()
+        flash("User deleted successfully!", category="success")
+    except Error as e:
+        flash(f"Error deleting user: {e}", category="danger")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('admin_manage_users'))

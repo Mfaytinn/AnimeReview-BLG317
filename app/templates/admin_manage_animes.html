@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% block title %}Manage Animes{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Manage Animes</h1>
+    <a href="{{ url_for('admin_add_anime') }}" class="btn btn-success mb-3">Add Anime</a>
+    <form method="GET" class="d-flex mb-3">
+        <input type="text" class="form-control" name="search" placeholder="Search by name" value="{{ search_query }}">
+        <button type="submit" class="btn btn-secondary ms-2">Search</button>
+    </form>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>English Name</th>
+                <th>Genres</th>
+                <th>Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for anime in animes %}
+            <tr>
+                <td>{{ anime.anime_id }}</td>
+                <td>{{ anime.anime_name }}</td>
+                <td>{{ anime.english_name }}</td>
+                <td>{{ anime.genres }}</td>
+                <td>{{ anime.type_anime }}</td>
+                <td>
+                    <a href="{{ url_for('admin_update_anime', anime_id=anime.anime_id) }}" class="btn btn-warning btn-sm">Edit</a>
+                    <form action="{{ url_for('admin_delete_anime', anime_id=anime.anime_id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <nav aria-label="Anime pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <!-- Previous Button -->
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin_manage_animes', page=current_page-1, search=search_query) }}">Previous</a>
+            </li>
+            {% endif %}
+    
+            <!-- Page Numbers -->
+            {% for page in range(start_page, end_page + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('admin_manage_animes', page=page, search=search_query) }}">{{ page }}</a>
+            </li>
+            {% endfor %}
+    
+            <!-- Next Button -->
+            {% if current_page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin_manage_animes', page=current_page+1, search=search_query) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>    
+</div>
+{% endblock %}
